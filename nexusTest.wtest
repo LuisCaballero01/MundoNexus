@@ -1,0 +1,81 @@
+import ciudadanos.*
+import centros.*
+import federacion.*
+
+describe "Validaciones iniciales" {
+    const aegis = new Guardian(edad=35,reservaOperativa=180)
+    const atlas = new Ingeniero(edad=50)
+    const echo = new Ingeniero(edad=35, nivelEspecializacion=9)
+    const juan = new Guardian(edad=30)
+    const sentinel = new Guardian(edad=22, reservaOperativa=120)
+    const sigma = new Ingeniero(edad=28, nivelEspecializacion=6)
+
+    const auroraPrime = new Centro(capacidadMaxima=5, indiceInnovacion=6, ciudadanos=[atlas,sigma,echo,sentinel,aegis])
+  test "La comunidad destacada de AuroraPrime está formada por Echo y Aegis" {
+    assert.equals([echo,aegis], auroraPrime.comunidadDestacada())
+  }
+  test "Si la potencia minima que determina la federacion es 30, el nivel inicial de proteccion es 2" {
+    federacion.potenciaMinima(30)
+    assert.equals(2, auroraPrime.nivelInicialProteccion()) 
+  }
+  test "AuroraPrime es de elite" {
+    assert.that(auroraPrime.esDeElite())
+  }
+  test "La capacidad efectiva de proteccion de AuroraPrime es de 58" {
+    assert.equals(58,auroraPrime.capacidadEfectivaProteccion())
+  }
+  test "Si sigma se capacita 2 veces, la capacidad efectiva de AuroraPrime ahora es de 78" {
+    sigma.capacitarse()
+    sigma.capacitarse()
+    assert.equals(78, auroraPrime.capacidadEfectivaProteccion())
+  }
+  test "Si se intenta agregar otro ciudadano a AuroraPrime, lanza un mensaje personalizado de error" {
+    assert.throwsExceptionWithMessage("Supera la cantidad maxima permitida", { auroraPrime.agregarCiudadano(juan)})
+  }
+}
+describe "Validacion Final" {
+    const nova = new Ingeniero(edad=20)
+    const orion = new Ingeniero(edad=50)
+    const pedro = new Ingeniero(edad=70)
+    const titan = new Guardian(edad=40)
+    const vega = new Guardian(edad=22)
+
+    const neoTokyo = new Centro(capacidadMaxima=5,indiceInnovacion=6, ciudadanos=[orion,nova])
+    const skylineOne = new Centro(capacidadMaxima=3,indiceInnovacion=5, ciudadanos=[titan,vega])
+    
+    method initialize() {
+        federacion.agregarCentro(neoTokyo)
+        federacion.agregarCentro(skylineOne)
+    }
+
+    const elysiumCore = federacion.crearNuevoCentro()
+
+  test "El centro ElysiumCore tiene un indice de innovacion de 5" {
+    assert.equals(5,elysiumCore.indiceInnovacion())
+  }
+  test "La capacidad maxima de ElysiumCore es de 3" {
+    assert.equals(3,elysiumCore.capacidadMaxima())
+  }
+  test "El centro ElysiumCore tiene como ciudadanos a Nova y a Vega." {
+    assert.equals([nova,vega], elysiumCore.ciudadanos())
+  }
+  test "Nova ya no pertecene al centro NeoTokyo" {
+    assert.notThat(neoTokyo.ciudadanos().contains(nova))
+  }
+  test "Vega ya no pertecene al centro SkylineOne" {
+    assert.notThat(skylineOne.ciudadanos().contains(vega))
+  }
+  test "Si neoTokyo cobra la contribucion, su capacidad maxima ahora es 6" {
+    neoTokyo.solicitarContribucion()
+    assert.equals(6,neoTokyo.capacidadMaxima())
+  }
+  test "Si neoTokyo cobra la contribucion, su indice de innovacion ahora es 7" {
+    neoTokyo.solicitarContribucion()
+    assert.equals(7,neoTokyo.indiceInnovacion())
+  }
+  test "Si neoTokyo suma un ciudadano de 70 años y luego cobra la contribucion, el ciudadano se jubila" {
+    neoTokyo.agregarCiudadano(pedro)
+    neoTokyo.solicitarContribucion()
+    assert.notThat(neoTokyo.ciudadanos().contains(pedro))
+  }
+}
